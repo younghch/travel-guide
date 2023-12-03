@@ -3,9 +3,8 @@ import requests
 
 API_URL = 'https://places.googleapis.com/v1/places:searchNearby'
 API_KEY = os.environ.get('GCP_PLACES_API_KEY')
-REQUIRED_FIELS = ['places.displayName', 'places.formattedAddress']
+REQUIRED_FIELS = ['places.displayName', 'places.googleMapsUri']
 LANUGAGE_CODE = 'ko'
-RADIUS = 1000.0
 
 
 class location:
@@ -13,8 +12,6 @@ class location:
         self.latitude = latitude
         self.longitude = longitude
 
-
-test_location = location(37.5734003, 126.9772253)
 
 TOURIST_PLACES = [
     'art_gallery',
@@ -38,27 +35,30 @@ TOURIST_PLACES = [
     'zoo',
 ]
 
-data = {
-    'includedTypes': TOURIST_PLACES,
-    'maxResultCount': 10,
-    'locationRestriction': {
-        'circle': {
-            'center': {
-                'latitude': test_location.latitude,
-                'longitude': test_location.longitude},
-            'radius': RADIUS
-        }
-    },
-    'languageCode': LANUGAGE_CODE,
-    'rankPreference': 'POPULARITY',
-    'maxResultCount': 20
-}
-
-headers = {
+HEADERS = {
     'Content-Type': 'application/json',
     'X-Goog-Api-Key': API_KEY,
-    'X-Goog-FieldMask': '*'
+    'X-Goog-FieldMask': ','.join(REQUIRED_FIELS),
 }
 
-res = requests.post(API_URL, json=data, headers=headers)
-print(res.text)
+
+def get_nearby_places(location: location, radius=50, language_code='kr'):
+    data = {
+        'includedTypes': TOURIST_PLACES,
+        'maxResultCount': 10,
+        'locationRestriction': {
+            'circle': {
+                'center': {
+                    'latitude': location.latitude,
+                    'longitude': location.longitude},
+                'radius': radius
+            }
+        },
+        'languageCode': language_code,
+        'rankPreference': 'POPULARITY',
+        'maxResultCount': 10
+    }
+
+    res = requests.post(API_URL, json=data, headers=HEADERS)
+    return res.json().get('places')
+
