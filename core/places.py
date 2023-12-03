@@ -4,7 +4,6 @@ import requests
 API_URL = 'https://places.googleapis.com/v1/places:searchNearby'
 API_KEY = os.environ.get('GCP_PLACES_API_KEY')
 REQUIRED_FIELS = ['places.displayName', 'places.googleMapsUri']
-LANUGAGE_CODE = 'ko'
 
 
 class location:
@@ -42,7 +41,7 @@ HEADERS = {
 }
 
 
-def get_nearby_places(location: location, radius=50, language_code='kr'):
+def get_nearby_places(location: location, radius=50, language_code='ko'):
     data = {
         'includedTypes': TOURIST_PLACES,
         'maxResultCount': 10,
@@ -62,3 +61,5 @@ def get_nearby_places(location: location, radius=50, language_code='kr'):
     res = requests.post(API_URL, json=data, headers=HEADERS)
     return res.json().get('places')
 
+def get_names_of_place(place):
+    return place.get('displayName').get('text')
