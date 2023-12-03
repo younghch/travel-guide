@@ -2,6 +2,7 @@ import logging
 import os
 
 from urllib.parse import urlparse, parse_qs
+from collections import defaultdict
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, filters, MessageHandler, CallbackQueryHandler
 
@@ -31,8 +32,9 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE)
         nearby_places = get_nearby_places(current_location, radius)
         radius = radius * 2
     keyboard = [
-        [create_inline_button_from_place(nearby_place)] for nearby_place in nearby_places
+        [create_inline_button_from_place(nearby_place, idx)] for idx, nearby_place in enumerate(nearby_places)
     ]
+    context.user_data['nearby_places'] = nearby_places
     print(keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     place_overview = get_general_guide_of_places(
@@ -43,9 +45,11 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    [place_name, google_cid] = query.data.split(QUERY_SEPARATOR)
+    place_idx = int(query.data)
+    place = context.user_data.get('nearby_places')[place_idx]
+    place_name = place.get('displayName').get('text')
+    google_maps_url = place.get('googleMapsUri')
 
-    google_maps_url = f'{GOOGLE_MAPS_PREFIX}{google_cid}'
     await query.answer('답변을 생성중입니다.')
     detailed_guide = get_detailed_guide_of_a_place(place_name)
 
@@ -56,11 +60,9 @@ async def guide_right_infront(update: Update, context: ContextTypes.DEFAULT_TYPE
     await context.bot.send_message(chat_id=update.effective_chat.id, text='guide right infront')
 
 
-def create_inline_button_from_place(place):
+def create_inline_button_from_place(place, id):
     display_name = place.get('displayName').get('text')
-    g_maps_cid = parse_qs(
-        urlparse(place.get('googleMapsUri')).query).get('cid')[0]
-    return InlineKeyboardButton(display_name, callback_data=f'{display_name}{QUERY_SEPARATOR}{g_maps_cid}')
+    return InlineKeyboardButton(display_name, callback_data=id)
 
 
 if __name__ == '__main__':
