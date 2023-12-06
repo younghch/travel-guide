@@ -56,6 +56,9 @@ async def gpt_version(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def location(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message.from_user.username == ALLOWED_USER_NAME:
+        await update.message.reply_text('현재는 허용된 사용자만 사용할 수 있습니다.')
+        return
     guide_mode = context.user_data.get(
         GUIDE_MODE_KEY, GUIDE_MODE_RIGHT_INFRONT)
     gpt_version = context.user_data.get(GPT_VERSION_KEY, 3)
@@ -141,8 +144,6 @@ def create_inline_button_from_place(place, id):
 if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_API_KEY).build()
 
-    user_filter = filters.User(username=f'@{ALLOWED_USER_NAME}')
-
     start_handler = CommandHandler('start', start)
     guide_mode_handler = CommandHandler('mode', guide_mode)
     gpt_version_handler = CommandHandler('gpt', gpt_version)
@@ -152,7 +153,7 @@ if __name__ == '__main__':
     application.add_handler(gpt_version_handler)
 
     application.add_handler(MessageHandler(
-        filters.LOCATION & user_filter, location))
+        filters.LOCATION, location))
 
     application.add_handler(CallbackQueryHandler(
         select_place, pattern=f'^{SELECT_PLACE_PREFIX}'))
