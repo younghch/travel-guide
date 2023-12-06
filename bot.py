@@ -61,7 +61,7 @@ async def location(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     guide_mode = context.user_data.get(
         GUIDE_MODE_KEY, GUIDE_MODE_RIGHT_INFRONT)
-    gpt_version = context.user_data.get(GPT_VERSION_KEY, 3)
+    gpt_version = context.user_data.get(GPT_VERSION_KEY, 4)
     if guide_mode == GUIDE_MODE_RIGHT_INFRONT:
         await guide_right_infront(update, context, gpt_version)
     elif guide_mode == GUIDE_MODE_NEARBY_PLACES:
