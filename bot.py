@@ -91,7 +91,7 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE,
     nearby_places = []
     radius = 100
     while not nearby_places:
-        nearby_places = get_nearby_places(current_location, radius)
+        nearby_places = get_nearby_places(current_location, radius, guide_type='historical')
         radius = radius * 2
     keyboard = [
         [create_inline_button_from_place(nearby_place, idx)] for idx, nearby_place in enumerate(nearby_places)

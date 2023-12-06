@@ -34,6 +34,16 @@ TOURIST_PLACES = [
     'zoo',
 ]
 
+HISTORICAL_PLACES = [
+    'art_gallery',
+    'museum',
+    'hiking_area',
+    'historical_landmark',
+    'marina',
+    'national_park',
+    'tourist_attraction',
+]
+
 HEADERS = {
     'Content-Type': 'application/json',
     'X-Goog-Api-Key': API_KEY,
@@ -41,9 +51,9 @@ HEADERS = {
 }
 
 
-def get_nearby_places(location: location, radius=50, language_code='ko'):
+def get_nearby_places(location: location, radius=50, language_code='ko', guide_type=None):
     data = {
-        'includedTypes': TOURIST_PLACES,
+        'includedTypes': HISTORICAL_PLACES if guide_type == 'historical' else TOURIST_PLACES,
         'maxResultCount': 10,
         'locationRestriction': {
             'circle': {
@@ -60,6 +70,7 @@ def get_nearby_places(location: location, radius=50, language_code='ko'):
 
     res = requests.post(API_URL, json=data, headers=HEADERS)
     return res.json().get('places')
+
 
 def get_names_of_place(place):
     return place.get('displayName').get('text')
