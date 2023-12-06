@@ -13,6 +13,7 @@ logging.basicConfig(
 )
 
 TELEGRAM_API_KEY = os.environ.get('TELEGRAM_API_KEY')
+ALLOWED_USER_NAME = os.environ.get('ALLOWED_USER_NAME')
 
 GUIDE_MODE_KEY = 'guid_mode'
 GPT_VERSION_KEY = 'gpt_version'
@@ -140,6 +141,8 @@ def create_inline_button_from_place(place, id):
 if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_API_KEY).build()
 
+    user_filter = filters.User(username=f'@{ALLOWED_USER_NAME}')
+
     start_handler = CommandHandler('start', start)
     guide_mode_handler = CommandHandler('mode', guide_mode)
     gpt_version_handler = CommandHandler('gpt', gpt_version)
@@ -149,7 +152,7 @@ if __name__ == '__main__':
     application.add_handler(gpt_version_handler)
 
     application.add_handler(MessageHandler(
-        filters.LOCATION, location))
+        filters.LOCATION & user_filter, location))
 
     application.add_handler(CallbackQueryHandler(
         select_place, pattern=f'^{SELECT_PLACE_PREFIX}'))
