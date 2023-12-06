@@ -75,7 +75,7 @@ async def guide_right_infront(update: Update, context: ContextTypes.DEFAULT_TYPE
     while not nearby_places and radius < 200:
         nearby_places = get_nearby_places(current_location, radius)
         radius = radius * 1.8
-    print(nearby_places)
+    logging.info(nearby_places)
     if not nearby_places:
         await update.message.reply_text('주변에 특별한 장소가 없습니다. 주변 안내 기능을 사용해보세요')
     else:
@@ -97,7 +97,7 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE,
         [create_inline_button_from_place(nearby_place, idx)] for idx, nearby_place in enumerate(nearby_places)
     ]
     context.user_data['nearby_places'] = nearby_places
-    print(keyboard)
+    logging.info(keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     place_overview = get_general_guide_of_places(
         list(map(get_names_of_place, nearby_places)), gpt_version)
