@@ -3,7 +3,7 @@ import requests
 
 API_URL = 'https://places.googleapis.com/v1/places:searchNearby'
 API_KEY = os.environ.get('GCP_PLACES_API_KEY')
-REQUIRED_FIELS = ['places.displayName', 'places.googleMapsUri']
+REQUIRED_FIELS = ['places.displayName', 'places.googleMapsUri', 'places.formattedAddress']
 
 
 class location:
@@ -72,5 +72,8 @@ def get_nearby_places(location: location, radius=50, language_code='ko', guide_t
     return res.json().get('places')
 
 
-def get_names_of_place(place):
+def get_name_of_place(place):
     return place.get('displayName').get('text')
+
+def get_address_of_place(place):
+    return place.get('formattedAddress')

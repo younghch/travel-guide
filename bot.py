@@ -4,12 +4,12 @@ import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, filters, MessageHandler, CallbackQueryHandler
 
-from core.places import get_nearby_places, get_names_of_place
+from core.places import get_nearby_places, get_name_of_place, get_address_of_place
 from core.gpt import get_general_guide_of_places, get_detailed_guide_of_places_right_infront
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 TELEGRAM_API_KEY = os.environ.get('TELEGRAM_API_KEY')
@@ -75,13 +75,13 @@ async def guide_right_infront(update: Update, context: ContextTypes.DEFAULT_TYPE
     while not nearby_places and radius < 200:
         nearby_places = get_nearby_places(current_location, radius)
         radius = radius * 1.8
-    logging.info(nearby_places)
+    logging.debug(nearby_places)
     if not nearby_places:
         await update.message.reply_text('주변에 특별한 장소가 없습니다. 주변 안내 기능을 사용해보세요')
     else:
         await update.message.reply_text(
             get_detailed_guide_of_places_right_infront(
-                list(map(get_names_of_place, nearby_places)),
+                list(map(format_place, nearby_places)),
                 gpt_version)
         )
 
@@ -97,10 +97,10 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE,
         [create_inline_button_from_place(nearby_place, idx)] for idx, nearby_place in enumerate(nearby_places)
     ]
     context.user_data['nearby_places'] = nearby_places
-    logging.info(keyboard)
+    logging.debug(keyboard)
     reply_markup = InlineKeyboardMarkup(keyboard)
     place_overview = get_general_guide_of_places(
-        list(map(get_names_of_place, nearby_places)), gpt_version)
+        list(map(format_place, nearby_places)), gpt_version)
 
     await update.message.reply_text(f'{place_overview}\n더 알아보고 싶은 장소를 선택해주세요:', reply_markup=reply_markup)
 
@@ -108,12 +108,11 @@ async def show_nearby_places(update: Update, context: ContextTypes.DEFAULT_TYPE,
 async def select_place(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     place_idx = int(query.data.split(SELECT_PLACE_PREFIX)[1])
-    place = context.user_data.get('nearby_places')[place_idx]
-    place_name = place.get('displayName').get('text')
-    google_maps_url = place.get('googleMapsUri')
+    selected_place = context.user_data.get('nearby_places')[place_idx]
+    google_maps_url = selected_place.get('googleMapsUri')
 
     await query.answer('답변을 생성중입니다.')
-    detailed_guide = get_detailed_guide_of_places_right_infront([place_name])
+    detailed_guide = get_detailed_guide_of_places_right_infront([format_place(selected_place)])
 
     await query.edit_message_text(text=f'{detailed_guide}\n{google_maps_url}')
 
@@ -137,8 +136,13 @@ async def select_gpt_type(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 def create_inline_button_from_place(place, id):
-    display_name = place.get('displayName').get('text')
+    display_name = get_name_of_place(place)
     return InlineKeyboardButton(display_name, callback_data=f'{SELECT_PLACE_PREFIX}{id}')
+
+def format_place(place):
+    name = get_name_of_place(place)
+    address = get_address_of_place(place)
+    return f'(장소명: {name}, 주소: {address})'
 
 
 if __name__ == '__main__':
