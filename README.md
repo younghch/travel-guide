@@ -16,13 +16,13 @@
 
 ##  Quick Links
 
-> - [ Overview](#-overview)
-> - [ How to use](#-how-to-use)
-> - [ Repository Structure](#-repository-structure)
-> - [ Modules](#-modules)
-> - [ Getting Started](#-getting-started)
->   - [ Running travel-guide](#-running-travel-guide)
-> - [ License](#-license)
+> - [ Overview](#overview)
+> - [ How to use](#how-to-use)
+> - [ Repository Structure](#repository-structure)
+> - [ Modules](#modules)
+> - [ Getting Started](#getting-started)
+>   - [ Running travel-guide](#running-travel-guide)
+> - [ License](#license)
 
 ---
 
